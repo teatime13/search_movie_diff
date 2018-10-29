@@ -1,5 +1,4 @@
 #seccon2018 media 改良版
-#本番動作用
 import os
 import shutil
 import cv2
@@ -9,8 +8,8 @@ from queue import Queue
 def main():
     video_2_frames()
 #参考 http://testpy.hatenablog.com/entry/2017/07/13/003000
-#video_file:対象のファイル名、image_dir:保存先、search_frame_rate:何フレームごとに計算するかを指定、comp_frame:何フーム前と比較するかの指定
-def video_2_frames(video_file='./target.mp4', image_dir='./image_dir/',search_frame_rate=1,comp_frame=5,image_file='img_%s.png',diff_file='diff_%s.png'):
+#video_file:対象のファイル名、image_dir:保存先、search_frame_rate:何フレームごとに計算するかを指定、comp_frame:何フーム前と比較するかの指定,hash_parameter:画像の差の値10以上でだいたい違う画像と見なされる
+def video_2_frames(video_file='./target.mp4', image_dir='./image_dir/',search_frame_rate=1,comp_frame=5,hash_parameter=10,image_file='img_%s.png',diff_file='diff_%s.png'):
     # Delete the entire directory tree if it exists.
     if os.path.exists(image_dir):
         shutil.rmtree(image_dir)  
@@ -48,7 +47,7 @@ def video_2_frames(video_file='./target.mp4', image_dir='./image_dir/',search_fr
             q_b.put(1)
             i += 1
             continue
-        elif check_hash(q.get(), hash_new):
+        elif check_hash(q.get(), hash_new, hash_parameter):
             print("diff  :  " + image_dir+image_file % str(i).zfill(8))
             q_b.get()
             q_b.put(1)
@@ -64,8 +63,8 @@ def video_2_frames(video_file='./target.mp4', image_dir='./image_dir/',search_fr
 #            break
     cap.release()  # When everything done, release the capture
 #参考 https://github.com/JohannesBuchner/imagehash
-def check_hash(hash_old, hash_new):
-    if(hash_new - hash_old > 9 or hash_old - hash_new > 9):
+def check_hash(hash_old, hash_new, hash_parameter):
+    if(hash_new - hash_old > hash_parameter or hash_old - hash_new > hash_parameter):
         return True
     else:
         return False
